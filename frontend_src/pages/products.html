@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi" data-required-role="admin">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Sản Phẩm - Hệ Thống Quản Lý Quán Cafe</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .product-list-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .product-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--color-accent);
+        }
+
+        .product-avatar {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .product-details {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .product-meta {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .product-price {
+            font-weight: 700;
+            color: var(--color-accent);
+            margin-top: 4px;
+        }
+
+        .product-status {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .status-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-inactive { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            
+            <span>COFFEE HDTQ</span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="/pages/dashboard.html">Trang Chủ</a></li>
+                <li><a href="/pages/tables.html">Bàn</a></li>
+                <li data-for-role="admin"><a href="/pages/products.html" class="active">Sản Phẩm</a></li>
+                <li data-for-role="admin"><a href="/pages/inventory.html">Kho Hàng</a></li>
+                <li data-for-role="admin"><a href="/pages/employees.html">Nhân Viên</a></li>
+                <li data-for-role="admin"><a href="/pages/reports.html">Báo Cáo</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-user">
+                <span id="user-name">User</span>
+                <div class="user-avatar" id="user-avatar">U</div>
+            </div>
+            <button class="btn-logout" id="logout-btn">Đăng Xuất</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="/pages/dashboard.html">🏠 Trang Chủ</a></li>
+            <li><a href="/pages/tables.html">🛋️ Bàn</a></li>
+            <li data-for-role="admin"><a href="/pages/products.html" class="active">📦 Sản Phẩm</a></li>
+            <li data-for-role="admin"><a href="/pages/inventory.html">🏗️ Kho Hàng</a></li>
+            <li data-for-role="admin"><a href="/pages/employees.html">👥 Nhân Viên</a></li>
+            <li data-for-role="admin"><a href="/pages/reports.html">📈 Báo Cáo</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">🍎 Quản Lý Sản Phẩm</h1>
+            <div class="page-actions">
+                <button class="btn-primary" onclick="showAddModal()">+ Thêm Sản Phẩm</button>
+            </div>
+        </div>
+
+        <div class="product-list-container">
+            <div class="filter-bar">
+                <input type="text" class="search-box" id="search-input" placeholder="Tìm tên sản phẩm..." oninput="filterProducts()">
+                <select id="category-filter" onchange="filterProducts()">
+                    <option value="all">Tất cả danh mục</option>
+                    <option value="coffee">Cà Phê</option>
+                    <option value="tea">Trà Sữa</option>
+                    <option value="juice">Nước Ép</option>
+                    <option value="snack">Đồ Ăn</option>
+                </select>
+            </div>
+
+            <div class="product-grid" id="product-grid">
+                <!-- Data will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Update/Add -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Thêm Sản Phẩm Mới</h2>
+            <form id="product-form" onsubmit="handleSave(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tên Sản Phẩm</label>
+                        <input type="text" id="p-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Danh Mục</label>
+                        <select id="p-category" required>
+                            <option value="coffee">Cà Phê</option>
+                            <option value="tea">Trà Sữa</option>
+                            <option value="juice">Nước Ép</option>
+                            <option value="snack">Đồ Ăn</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Giá Bán (đ)</label>
+                        <input type="number" id="p-price" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mã Sản Phẩm</label>
+                        <input type="text" id="p-code" placeholder="PROD-XXX">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mô Tả</label>
+                    <textarea id="p-desc" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Trạng Thái</label>
+                    <select id="p-status">
+                        <option value="active">Đang Kinh Doanh</option>
+                        <option value="inactive">Ngừng Kinh Doanh</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="hideModal()">Hủy</button>
+                    <button type="submit" class="btn-primary">Lưu Sản Phẩm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        const MOCK_PRODUCTS = [
+            { id: 1, name: 'Cà Phê Đen', category: 'coffee', price: 25000, code: 'CF001', status: 'active', icon: '☕' },
+            { id: 2, name: 'Cà Phê Sữa', category: 'coffee', price: 30000, code: 'CF002', status: 'active', icon: '🥛' },
+            { id: 3, name: 'Trà Sữa Matcha', category: 'tea', price: 35000, code: 'TS001', status: 'active', icon: '🍵' },
+            { id: 4, name: 'Nước Ép Cam', category: 'juice', price: 28000, code: 'NE001', status: 'active', icon: '🍊' },
+            { id: 5, name: 'Bánh Mì Kẹp Thịt', category: 'snack', price: 25000, code: 'SN001', status: 'inactive', icon: '🥖' }
+        ];
+
+        function renderProducts(data) {
+            const grid = document.getElementById('product-grid');
+            if (!grid) return;
+            grid.innerHTML = data.map(p => `
+                <div class="product-item">
+                    <div class="product-avatar">${p.icon || '☕'}</div>
+                    <div class="product-details">
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-meta">Mã: ${p.code} | <span class="product-status ${p.status === 'active' ? 'status-active' : 'status-inactive'}">${p.status === 'active' ? 'Kinh Doanh' : 'Tạm Ngưng'}</span></div>
+                        <div class="product-price">${new Intl.NumberFormat('vi-VN').format(p.price)}đ</div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn-small btn-secondary" onclick="showEditModal(${p.id})">✏️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterProducts() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            
+            const filtered = MOCK_PRODUCTS.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(search) || p.code.toLowerCase().includes(search);
+                const matchesCategory = category === 'all' || p.category === category;
+                return matchesSearch && matchesCategory;
+            });
+            
+            renderProducts(filtered);
+        }
+
+        function showAddModal() {
+            document.getElementById('modal-title').textContent = 'Thêm Sản Phẩm Mới';
+            document.getElementById('product-form').reset();
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        function showEditModal(id) {
+            const p = MOCK_PRODUCTS.find(item => item.id === id);
+            if (!p) return;
+            
+            document.getElementById('modal-title').textContent = 'Sửa Sản Phẩm';
+            document.getElementById('p-name').value = p.name;
+            document.getElementById('p-category').value = p.category;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-code').value = p.code;
+            document.getElementById('p-status').value = p.status;
+            
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        function hideModal() {
+            document.getElementById('product-modal').style.display = 'none';
+        }
+
+        function handleSave(e) {
+            e.preventDefault();
+            alert('✓ Đã lưu thông tin sản phẩm!');
+            hideModal();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts(MOCK_PRODUCTS);
+        });
+    </script>
+</body>
+</html>

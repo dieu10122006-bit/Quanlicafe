@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký Tài Khoản - Hệ Thống Quản Lý Quán Cafe</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .signup-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .signup-container {
+                grid-template-columns: 1fr;
+            }
+            .brand-section {
+                display: none;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========== BRAND SECTION (LEFT) ========== */
+        .brand-section {
+            background: rgba(139, 69, 19, 0.4);
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-section::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .brand-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-logo-area {
+            margin-bottom: 40px;
+        }
+
+        .brand-logo {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .brand-tagline {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 5px;
+        }
+
+        .brand-features {
+            list-style: none;
+        }
+
+        .brand-features li {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .feature-text h3 {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .feature-text p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .brand-footer {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* ========== SIGNUP FORM SECTION (RIGHT) ========== */
+        .signup-form-section {
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            color: white;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .form-header .login-link {
+            color: #DEB887;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .form-header .login-link:hover {
+            color: #E6CCB2;
+        }
+
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #DEB887;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(222, 184, 135, 0.1);
+        }
+
+        .form-group select option {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .signup-btn {
+            padding: 12px 20px;
+            background: #DEB887;
+            color: #5C3D2E;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .signup-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: #E6CCB2;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .signup-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-group.error input,
+        .form-group.error select {
+            border-color: #d32f2f;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        .password-requirements {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .password-requirements h4 {
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .password-requirements ul {
+            list-style-position: inside;
+            margin-left: 10px;
+        }
+
+        .password-requirements li {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .requirement-check {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            text-align: center;
+            line-height: 16px;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+
+        .requirement-check.valid {
+            background: #4caf50;
+            color: white;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .form-footer p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .signup-form-section {
+                padding: 30px 20px;
+            }
+
+            .form-header h1 {
+                font-size: 24px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-section {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="signup-container">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="brand-content">
+                    <div class="brand-logo-area">
+                        <div class="brand-logo">☕ Quán Cafe</div>
+                        <div class="brand-tagline">Hệ Thống Quản Lý Hiện Đại</div>
+                    </div>
+                    <ul class="brand-features">
+                        <li>
+                            <div class="feature-icon">📊</div>
+                            <div class="feature-text">
+                                <h3>Quản Lý Toàn Diện</h3>
+                                <p>Quản lý đơn hàng, sản phẩm và doanh thu dễ dàng</p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="feature-icon">🚀</div>
+                            <div class="feature-text">
+                                <h3>Nhanh & Hiệu Quả</h3>
+                                <p>Tăng tốc độ phục vụ khách hàng</p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="feature-icon">🔒</div>
+                            <div class="feature-text">
+                                <h3>Bảo Mật Cao</h3>
+                                <p>Dữ liệu an toàn với mã hóa tiên tiến</p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="feature-icon">💡</div>
+                            <div class="feature-text">
+                                <h3>Phân Tích Thông Minh</h3>
+                                <p>Báo cáo chi tiết giúp ra quyết định tốt</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="brand-footer">
+                    © 2026 Hệ Thống Quản Lý Quán Cafe. Tất cả quyền được bảo vệ.
+                </div>
+            </div>
+
+            <!-- Signup Form Section -->
+            <div class="signup-form-section">
+                <div class="form-header">
+                    <h1>Tạo Tài Khoản</h1>
+                    <p>Bạn đã có tài khoản? <span class="login-link" onclick="window.location.href='/pages/login.html'">Đăng Nhập Ngay</span></p>
+                </div>
+
+                <div id="alert-container"></div>
+
+                <div class="form-info">
+                    ℹ️ Tạo tài khoản mới để bắt đầu sử dụng hệ thống. Bạn sẽ có thể truy cập toàn bộ tính năng sau khi hoàn tất đăng ký.
+                </div>
+
+                <form class="signup-form" id="signupForm">
+                    <!-- Full Name -->
+                    <div class="form-group">
+                        <label for="fullName">Họ và Tên</label>
+                        <input 
+                            type="text" 
+                            id="fullName" 
+                            name="fullName" 
+                            placeholder="Nhập họ và tên đầy đủ"
+                            required
+                        >
+                        <span class="error-message"></span>
+                    </div>
+
+                    <!-- Username and Email -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="username">Tên Đăng Nhập</label>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                name="username" 
+                                placeholder="Tên đăng nhập (3-20 ký tự)"
+                                required
+                            >
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                placeholder="Nhập địa chỉ email"
+                                required
+                            >
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Phone and Role -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Số Điện Thoại</label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                name="phone" 
+                                placeholder="Nhập số điện thoại"
+                            >
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Vai Trò</label>
+                            <select id="role" name="role" required>
+                                <option value="">-- Chọn vai trò --</option>
+                                <option value="staff">Nhân Viên</option>
+                                <option value="customer">Khách Hàng</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label for="password">Mật Khẩu</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+                            required
+                        >
+                        <span class="error-message"></span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label for="confirmPassword">Xác Nhận Mật Khẩu</label>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            placeholder="Nhập lại mật khẩu"
+                            required
+                        >
+                        <span class="error-message"></span>
+                    </div>
+
+                    <!-- Password Requirements -->
+                    <div class="password-requirements">
+                        <h4>Yêu Cầu Mật Khẩu:</h4>
+                        <ul>
+                            <li>
+                                <span class="requirement-check" id="req-length">✗</span>
+                                <span>Tối thiểu 6 ký tự</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="signup-btn" id="signupBtn">Đăng Ký Tài Khoản</button>
+                </form>
+
+                <div class="form-footer">
+                    <p>Bằng cách đăng ký, bạn đồng ý với <a href="#" style="color: #8B4513; text-decoration: none;">Điều Khoản Dịch Vụ</a> và <a href="#" style="color: #8B4513; text-decoration: none;">Chính Sách Bảo Mật</a> của chúng tôi.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        const SignupForm = {
+            formElement: document.getElementById('signupForm'),
+            alertContainer: document.getElementById('alert-container'),
+            signupBtn: document.getElementById('signupBtn'),
+
+            /**
+             * Initialize form
+             */
+            init() {
+                this.setupEventListeners();
+            },
+
+            /**
+             * Setup form event listeners
+             */
+            setupEventListeners() {
+                // Password validation on input
+                const passwordInput = document.getElementById('password');
+                passwordInput.addEventListener('input', (e) => {
+                    this.validatePasswordRequirements(e.target.value);
+                });
+
+                // Form submission
+                this.formElement.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                });
+
+                // Real-time validation
+                const inputs = this.formElement.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    input.addEventListener('blur', () => {
+                        this.validateField(input);
+                    });
+                });
+            },
+
+            /**
+             * Validate password requirements
+             */
+            validatePasswordRequirements(password) {
+                const requirements = {
+                    length: password.length >= 6
+                };
+
+                document.getElementById('req-length').className = 'requirement-check' + (requirements.length ? ' valid' : '');
+                document.getElementById('req-length').textContent = requirements.length ? '✓' : '✗';
+
+                return Object.values(requirements).every(r => r);
+            },
+
+            /**
+             * Validate single field
+             */
+            validateField(field) {
+                const group = field.closest('.form-group');
+                const errorMsg = group.querySelector('.error-message');
+                let error = '';
+
+                switch (field.name) {
+                    case 'fullName':
+                        if (field.value.trim().length < 3) {
+                            error = 'Họ và tên phải có ít nhất 3 ký tự';
+                        }
+                        break;
+                    case 'username':
+                        if (field.value.length < 3 || field.value.length > 20) {
+                            error = 'Tên đăng nhập phải từ 3-20 ký tự';
+                        }
+                        if (!/^[a-zA-Z0-9_]+$/.test(field.value)) {
+                            error = 'Tên đăng nhập chỉ chứa chữ, số và dấu gạch dưới';
+                        }
+                        break;
+                    case 'email':
+                        if (!field.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                            error = 'Email không hợp lệ';
+                        }
+                        break;
+                    case 'phone':
+                        if (field.value && !/^[0-9]{10,11}$/.test(field.value.replace(/[-\s]/g, ''))) {
+                            error = 'Số điện thoại không hợp lệ (10-11 chữ số)';
+                        }
+                        break;
+                    case 'password':
+                        if (field.value.length < 6) {
+                            error = 'Mật khẩu phải có ít nhất 6 ký tự';
+                        }
+                        break;
+                    case 'confirmPassword':
+                        if (field.value !== document.getElementById('password').value) {
+                            error = 'Mật khẩu xác nhận không khớp';
+                        }
+                        break;
+                }
+
+                if (error) {
+                    group.classList.add('error');
+                    errorMsg.textContent = error;
+                } else {
+                    group.classList.remove('error');
+                    errorMsg.textContent = '';
+                }
+
+                return !error;
+            },
+
+            /**
+             * Validate entire form
+             */
+            validateForm() {
+                const inputs = this.formElement.querySelectorAll('input[required], select[required]');
+                let isValid = true;
+
+                inputs.forEach(input => {
+                    if (!this.validateField(input)) {
+                        isValid = false;
+                    }
+                });
+
+                // Additional validation
+                const password = document.getElementById('password').value;
+                if (!this.validatePasswordRequirements(password)) {
+                    this.showAlert('Mật khẩu không đáp ứng các yêu cầu', 'error');
+                    isValid = false;
+                }
+
+                if (document.getElementById('password').value !== document.getElementById('confirmPassword').value) {
+                    const group = document.getElementById('confirmPassword').closest('.form-group');
+                    group.classList.add('error');
+                    group.querySelector('.error-message').textContent = 'Mật khẩu xác nhận không khớp';
+                    isValid = false;
+                }
+
+                return isValid;
+            },
+
+            /**
+             * Handle form submission
+             */
+            async handleSubmit() {
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                const formData = {
+                    fullName: document.getElementById('fullName').value.trim(),
+                    username: document.getElementById('username').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    password: document.getElementById('password').value,
+                    role: document.getElementById('role').value
+                };
+
+                this.signupBtn.disabled = true;
+                this.showAlert('<span class="loading-spinner"></span>Đang xử lý...', 'loading');
+
+                try {
+                    const response = await API.auth.signup(formData);
+
+                    this.showAlert('Đăng ký thành công! Đang chuyển hướng...', 'success');
+                    
+                    // Save token and user info
+                    localStorage.setItem('token', response.token);
+                    localStorage.setItem('user', JSON.stringify(response.user));
+
+                    // Redirect to appropriate page
+                    setTimeout(() => {
+                        if (response.user.role === 'admin') {
+                            window.location.href = '/pages/dashboard.html';
+                        } else if (response.user.role === 'staff') {
+                            window.location.href = '/pages/order.html';
+                        } else {
+                            window.location.href = '/pages/menu.html';
+                        }
+                    }, 1500);
+
+                } catch (error) {
+                    this.showAlert(error.message, 'error');
+                    this.signupBtn.disabled = false;
+                }
+            },
+
+            /**
+             * Show alert message
+             */
+            showAlert(message, type) {
+                const alert = document.createElement('div');
+                alert.className = `alert ${type}`;
+                alert.innerHTML = message;
+                this.alertContainer.innerHTML = '';
+                this.alertContainer.appendChild(alert);
+
+                if (type !== 'loading') {
+                    setTimeout(() => {
+                        alert.style.opacity = '0';
+                        setTimeout(() => alert.remove(), 300);
+                    }, 5000);
+                }
+            }
+        };
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            SignupForm.init();
+        });
+    </script>
+</body>
+</html>

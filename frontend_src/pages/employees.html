@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi" data-required-role="admin">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhân Viên - Hệ Thống Quản Lý Quán Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .employees-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--color-accent);
+        }
+
+        .section-header h2 {
+            font-size: 22px;
+            color: white;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--color-accent);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .badge.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-edit:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            
+            <span>COFFEE HDTQ</span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="/pages/dashboard.html">Trang Chủ</a></li>
+                <li><a href="/pages/tables.html">Bàn</a></li>
+                <li data-for-role="admin"><a href="/pages/products.html">Sản Phẩm</a></li>
+                <li data-for-role="admin"><a href="/pages/inventory.html">Kho Hàng</a></li>
+                <li data-for-role="admin"><a href="/pages/employees.html" class="active">Nhân Viên</a></li>
+                <li data-for-role="admin"><a href="/pages/reports.html">Báo Cáo</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-user">
+                <span id="user-name">User</span>
+                <div class="user-avatar" id="user-avatar">U</div>
+            </div>
+            <button class="btn-logout" id="logout-btn">Đăng Xuất</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="/pages/dashboard.html">🏠 Trang Chủ</a></li>
+            <li><a href="/pages/tables.html">🛋️ Bàn</a></li>
+            <li data-for-role="admin"><a href="/pages/products.html">📦 Sản Phẩm</a></li>
+            <li data-for-role="admin"><a href="/pages/inventory.html">🏗️ Kho Hàng</a></li>
+            <li data-for-role="admin"><a href="/pages/employees.html" class="active">👥 Nhân Viên</a></li>
+            <li data-for-role="admin"><a href="/pages/reports.html">📈 Báo Cáo</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="employees-container">
+        <div class="section-header">
+            <h2>👥 Quản Lý Nhân Viên</h2>
+            <button onclick="addEmployee()">+ Thêm Nhân Viên</button>
+        </div>
+
+        <div class="table-container">
+            <table id="employees-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên Nhân Viên</th>
+                        <th>Chức Vụ</th>
+                        <th>Email</th>
+                        <th>Điện Thoại</th>
+                        <th>Trạng Thái</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <script>
+        const MOCK_EMPLOYEES = [
+            { id: 1, name: 'Trần Minh Quân', position: 'Quản Lý', email: 'quan@cafe.com', phone: '0912345678', status: 'active' },
+            { id: 2, name: 'Nguyễn Văn An', position: 'Pha Chế', email: 'an@cafe.com', phone: '0987654321', status: 'active' },
+            { id: 3, name: 'Lê Thị Hương', position: 'Pha Chế', email: 'huong@cafe.com', phone: '0909090909', status: 'active' },
+            { id: 4, name: 'Phạm Văn Dũng', position: 'Phục Vụ', email: 'dung@cafe.com', phone: '0911111111', status: 'inactive' },
+            { id: 5, name: 'Hoàng Thị Mai', position: 'Phục Vụ', email: 'mai@cafe.com', phone: '0922222222', status: 'active' }
+        ];
+
+        function loadEmployees() {
+            const tbody = document.querySelector('#employees-table tbody');
+            tbody.innerHTML = MOCK_EMPLOYEES.map(emp => `
+                <tr>
+                    <td>#${emp.id}</td>
+                    <td>${emp.name}</td>
+                    <td>${emp.position}</td>
+                    <td>${emp.email}</td>
+                    <td>${emp.phone}</td>
+                    <td>
+                        <span class="badge ${emp.status === 'active' ? 'active' : 'inactive'}">
+                            ${emp.status === 'active' ? '✓ Hoạt Động' : '✕ Ngừng'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editEmployee(${emp.id})">Sửa</button>
+                            <button class="btn-action btn-delete" onclick="deleteEmployee(${emp.id})">Xóa</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function addEmployee() {
+            alert('✓ Thêm nhân viên mới\n\nTính năng này sẽ được kích hoạt khi backend được triển khai.');
+        }
+
+        function editEmployee(id) {
+            const employee = MOCK_EMPLOYEES.find(e => e.id === id);
+            alert(`✓ Sửa nhân viên: ${employee.name}`);
+        }
+
+        function deleteEmployee(id) {
+            if (confirm('Bạn chắc chắn muốn xóa?')) {
+                alert('✓ Xóa thành công!');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadEmployees();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi" data-required-role="admin,staff,customer">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Hệ Thống Quản Lý Quán Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .menu-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+
+        .menu-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--color-accent);
+        }
+
+        .menu-image {
+            width: 100%;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-info {
+            padding: 20px;
+        }
+
+        .menu-name {
+            font-weight: 800;
+            color: white;
+            font-size: 18px;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        .menu-category {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-price {
+            color: var(--color-accent);
+            font-weight: 800;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .btn-menu.primary {
+            width: 100%;
+            background: var(--color-accent);
+            color: #5C3D2E;
+            font-weight: 700;
+            padding: 10px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-menu.primary:hover {
+            background: white;
+            color: black;
+            transform: scale(1.02);
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 15px;
+            padding: 20px 30px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: var(--color-accent);
+            color: #5C3D2E;
+            border-color: var(--color-accent);
+            box-shadow: 0 4px 15px rgba(222, 184, 135, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            
+            <span>COFFEE HDTQ</span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="/pages/dashboard.html">Trang Chủ</a></li>
+                <li><a href="/pages/tables.html">Bàn</a></li>
+                <li data-for-role="admin"><a href="/pages/products.html">Sản Phẩm</a></li>
+                <li data-for-role="admin"><a href="/pages/inventory.html">Kho Hàng</a></li>
+                <li data-for-role="admin"><a href="/pages/employees.html">Nhân Viên</a></li>
+                <li data-for-role="admin"><a href="/pages/reports.html">Báo Cáo</a></li>
+            </ul>
+        </div>
+
+    <!-- Category Filter -->
+    <div class="category-filter">
+        <button class="category-btn active" onclick="filterCategory('all')">Tất Cả</button>
+        <button class="category-btn" onclick="filterCategory('coffee')">Cà Phê</button>
+        <button class="category-btn" onclick="filterCategory('tea')">Trà Sữa</button>
+        <button class="category-btn" onclick="filterCategory('juice')">Nước Uống</button>
+        <button class="category-btn" onclick="filterCategory('snack')">Đồ Ăn</button>
+    </div>
+
+    <!-- Menu Items -->
+    <div class="menu-container" id="menu-container">
+        <!-- Items will be inserted here -->
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <script>
+        const MOCK_PRODUCTS = [
+            { id: 1, name: 'Cà Phê Đen', category: 'coffee', icon: '☕', price: 25000, description: 'Cà phê nguyên chất' },
+            { id: 2, name: 'Cà Phê Sữa', category: 'coffee', icon: '☕', price: 30000, description: 'Với sữa đặc' },
+            { id: 3, name: 'Cà Phê Kem', category: 'coffee', icon: '🍦', price: 35000, description: 'Với kem tươi' },
+            { id: 4, name: 'Espresso', category: 'coffee', icon: '☕', price: 20000, description: 'Cà phê đặc sánh' },
+            { id: 5, name: 'Trà Sữa Trân Châu', category: 'tea', icon: '🍵', price: 28000, description: 'Trân châu đen' },
+            { id: 6, name: 'Trà Sữa Thạch Coco', category: 'tea', icon: '🍹', price: 30000, description: 'Với thạch coco' },
+            { id: 7, name: 'Nước Chanh', category: 'juice', icon: '🍋', price: 15000, description: 'Tươi mát' },
+            { id: 8, name: 'Nước Dưa Hấu', category: 'juice', icon: '🍉', price: 18000, description: 'Mùa hè' },
+            { id: 9, name: 'Bánh Mì', category: 'snack', icon: '🥖', price: 20000, description: 'Bánh mì thơm' },
+            { id: 10, name: 'Bánh Quy', category: 'snack', icon: '🍪', price: 15000, description: 'Bánh quy giòn' }
+        ];
+
+        let currentCategory = 'all';
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        function loadMenu() {
+            const container = document.getElementById('menu-container');
+            const products = currentCategory === 'all'
+                ? MOCK_PRODUCTS
+                : MOCK_PRODUCTS.filter(p => p.category === currentCategory);
+
+            container.innerHTML = products.map(product => `
+                <div class="menu-item">
+                    <div class="menu-image">${product.icon}</div>
+                    <div class="menu-info">
+                        <div class="menu-name">${product.name}</div>
+                        <div class="menu-category">${product.category}</div>
+                        <div class="menu-price">${formatCurrency(product.price)}</div>
+                        <div class="menu-actions">
+                            <button class="btn-menu primary" onclick="addToCart(${product.id}, '${product.name}', ${product.price})">Thêm</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadMenu();
+        }
+
+        function addToCart(id, name, price) {
+            alert(`✓ Đã thêm "${name}" vào giỏ hàng!`);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/pages/login.html';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('user-name').textContent = user.name || 'User';
+            loadMenu();
+        });
+    </script>
+</body>
+</html>

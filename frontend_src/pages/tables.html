@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi" data-required-role="admin,staff">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ Đồ Bàn - COFFEE HDTQ</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .table-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .table-item:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border-color: #DEB887;
+        }
+
+        .table-item.occupied {
+            border-color: #EF4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .table-item.reserved {
+            border-color: #F59E0B;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .table-item.available {
+            border-color: #10B981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .table-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .table-status {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .occupied .status-dot { background: #EF4444; }
+        .available .status-dot { background: #10B981; }
+        .reserved .status-dot { background: #F59E0B; }
+
+        .table-info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .floor-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .floor-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .floor-btn.active {
+            background: #DEB887;
+            color: #5C3D2E;
+            border-color: #DEB887;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            
+            <span>COFFEE HDTQ</span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="/pages/dashboard.html">Trang Chủ</a></li>
+                <li><a href="/pages/tables.html" class="active">Bàn</a></li>
+                <li data-for-role="admin"><a href="/pages/products.html">Sản Phẩm</a></li>
+                <li data-for-role="admin"><a href="/pages/inventory.html">Kho Hàng</a></li>
+                <li data-for-role="admin"><a href="/pages/employees.html">Nhân Viên</a></li>
+                <li data-for-role="admin"><a href="/pages/reports.html">Báo Cáo</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-user">
+                <span id="user-name">User</span>
+                <div class="user-avatar" id="user-avatar">U</div>
+            </div>
+            <button class="btn-logout" id="logout-btn">Đăng Xuất</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="/pages/dashboard.html">🏠 Trang Chủ</a></li>
+            <li><a href="/pages/tables.html" class="active">🛋️ Bàn</a></li>
+            <li data-for-role="admin"><a href="/pages/products.html">📦 Sản Phẩm</a></li>
+            <li data-for-role="admin"><a href="/pages/inventory.html">🏗️ Kho Hàng</a></li>
+            <li data-for-role="admin"><a href="/pages/employees.html">👥 Nhân Viên</a></li>
+            <li data-for-role="admin"><a href="/pages/reports.html">📈 Báo Cáo</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">🪑 Bàn</h1>
+            <div class="page-actions">
+                <button class="btn-primary" onclick="addTable()">+ Thêm Bàn</button>
+            </div>
+        </div>
+
+        <div class="floor-selector">
+            <button class="floor-btn active">Tầng Trệt</button>
+            <button class="floor-btn">Lầu 1</button>
+            <button class="floor-btn">Sân Thượng</button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><span class="status-dot" style="background:#10B981;"></span> Trống</div>
+            <div class="legend-item"><span class="status-dot" style="background:#EF4444;"></span> Đang Có Khách</div>
+            <div class="legend-item"><span class="status-dot" style="background:#F59E0B;"></span> Đặt Trước</div>
+        </div>
+
+        <div class="table-grid" id="table-grid">
+            <!-- Tables loaded here -->
+        </div>
+    </main>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <script>
+        const MOCK_TABLES = [
+            { id: 1, number: '01', status: 'available', Capacity: 4 },
+            { id: 2, number: '02', status: 'occupied', Capacity: 2, since: '10:15' },
+            { id: 3, number: '03', status: 'available', Capacity: 4 },
+            { id: 4, number: '04', status: 'reserved', Capacity: 6, time: '18:00' },
+            { id: 5, number: '05', status: 'occupied', Capacity: 4, since: '09:45' },
+            { id: 6, number: '06', status: 'available', Capacity: 2 },
+            { id: 7, number: '07', status: 'available', Capacity: 4 },
+            { id: 8, number: '08', status: 'occupied', Capacity: 2, since: '10:30' },
+            { id: 9, number: '09', status: 'available', Capacity: 8 },
+            { id: 10, number: '10', status: 'available', Capacity: 4 }
+        ];
+
+        function renderTables() {
+            const grid = document.getElementById('table-grid');
+            if (!grid) return;
+            grid.innerHTML = MOCK_TABLES.map(table => `
+                <div class="table-item ${table.status}" onclick="handleTableClick(${table.id})">
+                    <div class="table-number">Bàn ${table.number}</div>
+                    <div class="table-status">
+                        <span class="status-dot"></span>
+                        ${table.status === 'available' ? 'Trống' : table.status === 'occupied' ? 'Đang Có Khách' : 'Đặt Trước'}
+                    </div>
+                    <div class="table-info">
+                        ${table.since ? 'Từ: ' + table.since : table.time ? 'Hẹn: ' + table.time : 'Sức chứa: ' + table.Capacity}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleTableClick(id) {
+            const table = MOCK_TABLES.find(t => t.id === id);
+            if(table.status === 'available') {
+                window.location.href = '/pages/order.html?table=' + table.number;
+            } else {
+                alert('Bàn này đang bận/đã đặt. Vui lòng kiểm tra chi tiết đơn hàng.');
+            }
+        }
+
+        function addTable() {
+            alert('✓ Thêm bàn mới thành công!');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+             renderTables();
+        });
+    </script>
+</body>
+</html>

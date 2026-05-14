@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="vi" data-required-role="staff,admin">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt Hàng - Hệ Thống Quản Lý Quán Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .order-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 100px);
+        }
+
+        .order-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-header {
+            background: rgba(139, 69, 19, 0.4);
+            backdrop-filter: blur(5px);
+            color: #DEB887;
+            padding: 16px 20px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .section-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .product-card:hover {
+            border-color: #DEB887;
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .product-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 6px;
+        }
+
+        .product-price {
+            color: #DEB887;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .order-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .order-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .item-price {
+            font-size: 12px;
+            color: #DEB887;
+        }
+
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .qty-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-btn:hover {
+            background: #DEB887;
+            color: #5C3D2E;
+            border-color: #DEB887;
+        }
+
+        .order-summary {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        .summary-row.total {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 10px;
+            font-weight: 700;
+            font-size: 18px;
+            color: #DEB887;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn-order {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-order.primary {
+            background: #FF8C00;
+            color: white;
+        }
+
+        .btn-order.primary:hover {
+            background: #E67E00;
+        }
+
+        .btn-order.secondary {
+            background: #E0E0E0;
+            color: #333;
+        }
+
+        .btn-order.secondary:hover {
+            background: #D0D0D0;
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: #DEB887;
+            color: #5C3D2E;
+            border-color: #DEB887;
+        }
+
+        @media (max-width: 768px) {
+            .order-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            
+            <span>COFFEE HDTQ</span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="/pages/dashboard.html">Trang Chủ</a></li>
+                <li><a href="/pages/tables.html">Bàn</a></li>
+                <li data-for-role="admin"><a href="/pages/products.html">Sản Phẩm</a></li>
+                <li data-for-role="admin"><a href="/pages/inventory.html">Kho Hàng</a></li>
+                <li data-for-role="admin"><a href="/pages/employees.html">Nhân Viên</a></li>
+                <li data-for-role="admin"><a href="/pages/reports.html">Báo Cáo</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-user">
+                <span id="user-name">User</span>
+                <div class="user-avatar" id="user-avatar">U</div>
+            </div>
+            <button class="btn-logout" id="logout-btn">Đăng Xuất</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="/pages/dashboard.html">🏠 Trang Chủ</a></li>
+            <li><a href="/pages/tables.html">🛋️ Bàn</a></li>
+            <li data-for-role="admin"><a href="/pages/products.html">📦 Sản Phẩm</a></li>
+            <li data-for-role="admin"><a href="/pages/inventory.html">🏗️ Kho Hàng</a></li>
+            <li data-for-role="admin"><a href="/pages/employees.html">👥 Nhân Viên</a></li>
+            <li data-for-role="admin"><a href="/pages/reports.html">📈 Báo Cáo</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="order-container">
+            <!-- Left: Menu -->
+            <div class="order-section">
+                <div class="section-header">📋 Menu Sản Phẩm</div>
+                <div class="section-body">
+                    <!-- Category Filter -->
+                    <div class="category-filter" id="category-filter">
+                        <button class="category-btn active" onclick="filterCategory('all')">Tất Cả</button>
+                        <button class="category-btn" onclick="filterCategory('coffee')">Cà Phê</button>
+                        <button class="category-btn" onclick="filterCategory('tea')">Trà Sữa</button>
+                        <button class="category-btn" onclick="filterCategory('juice')">Nước Uống</button>
+                        <button class="category-btn" onclick="filterCategory('snack')">Đồ Ăn</button>
+                    </div>
+
+                    <!-- Product Grid -->
+                    <div class="product-grid" id="product-grid">
+                        <!-- Products will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary -->
+            <div class="order-section">
+                <div class="section-header">🛒 Đơn Hàng</div>
+                <div class="section-body">
+                    <div class="order-items" id="order-items">
+                        <div style="text-align: center; color: #999; padding: 30px 0;">
+                            Chưa có sản phẩm nào
+                        </div>
+                    </div>
+                </div>
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Tổng tiền:</span>
+                        <span id="total-amount">0 VND</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Giảm giá (%):</span>
+                        <span id="discount-amount">0 VND</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Cần thanh toán:</span>
+                        <span id="final-amount">0 VND</span>
+                    </div>
+                    <div class="order-actions">
+                        <button class="btn-order secondary" onclick="clearOrder()">Xóa</button>
+                        <button class="btn-order primary" onclick="submitOrder()">Đặt Hàng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <script>
+        /**
+         * Mock products for demo
+         */
+        const MOCK_PRODUCTS = [
+            { id: 1, name: 'Cà Phê Đen', category: 'coffee', icon: '☕', price: 25000 },
+            { id: 2, name: 'Cà Phê Sữa', category: 'coffee', icon: '☕', price: 30000 },
+            { id: 3, name: 'Cà Phê Kem', category: 'coffee', icon: '🍦', price: 35000 },
+            { id: 4, name: 'Espresso', category: 'coffee', icon: '☕', price: 20000 },
+            { id: 5, name: 'Trà Sữa Trân Châu', category: 'tea', icon: '🍵', price: 28000 },
+            { id: 6, name: 'Trà Sữa Thạch Coco', category: 'tea', icon: '🍹', price: 30000 },
+            { id: 7, name: 'Nước Chanh', category: 'juice', icon: '🍋', price: 15000 },
+            { id: 8, name: 'Nước Dưa Hấu', category: 'juice', icon: '🍉', price: 18000 },
+            { id: 9, name: 'Bánh Mì', category: 'snack', icon: '🥖', price: 20000 },
+            { id: 10, name: 'Bánh Quy', category: 'snack', icon: '🍪', price: 15000 }
+        ];
+
+        let currentCart = [];
+        let currentCategory = 'all';
+
+        /**
+         * Format currency
+         */
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        /**
+         * Load products
+         */
+        function loadProducts() {
+            const grid = document.getElementById('product-grid');
+            const products = currentCategory === 'all' 
+                ? MOCK_PRODUCTS 
+                : MOCK_PRODUCTS.filter(p => p.category === currentCategory);
+
+            grid.innerHTML = products.map(product => `
+                <div class="product-card" onclick="addToOrder(${product.id}, '${product.name}', ${product.price})">
+                    <div class="product-icon">${product.icon}</div>
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">${formatCurrency(product.price)}</div>
+                </div>
+            `).join('');
+        }
+
+        /**
+         * Filter by category
+         */
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadProducts();
+        }
+
+        /**
+         * Add item to order
+         */
+        function addToOrder(productId, name, price) {
+            const existingItem = currentCart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                currentCart.push({ id: productId, name, price, quantity: 1 });
+            }
+            
+            updateOrderDisplay();
+        }
+
+        /**
+         * Update order display
+         */
+        function updateOrderDisplay() {
+            const container = document.getElementById('order-items');
+            
+            if (currentCart.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #999; padding: 30px 0;">Chưa có sản phẩm nào</div>';
+            } else {
+                container.innerHTML = currentCart.map(item => `
+                    <div class="order-item">
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">${formatCurrency(item.price)} x ${item.quantity}</div>
+                        </div>
+                        <div class="item-quantity">
+                            <button class="qty-btn" onclick="decreaseQuantity(${item.id})">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="qty-btn" onclick="increaseQuantity(${item.id})">+</button>
+                            <button class="qty-btn" onclick="removeItem(${item.id})" style="color: red;">✕</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateSummary();
+        }
+
+        /**
+         * Increase quantity
+         */
+        function increaseQuantity(productId) {
+            const item = currentCart.find(i => i.id === productId);
+            if (item) item.quantity++;
+            updateOrderDisplay();
+        }
+
+        /**
+         * Decrease quantity
+         */
+        function decreaseQuantity(productId) {
+            const item = currentCart.find(i => i.id === productId);
+            if (item && item.quantity > 1) {
+                item.quantity--;
+                updateOrderDisplay();
+            }
+        }
+
+        /**
+         * Remove item
+         */
+        function removeItem(productId) {
+            currentCart = currentCart.filter(i => i.id !== productId);
+            updateOrderDisplay();
+        }
+
+        /**
+         * Update summary
+         */
+        function updateSummary() {
+            const totalAmount = currentCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discountAmount = 0;
+            const finalAmount = totalAmount - discountAmount;
+
+            document.getElementById('total-amount').textContent = formatCurrency(totalAmount);
+            document.getElementById('discount-amount').textContent = formatCurrency(discountAmount);
+            document.getElementById('final-amount').textContent = formatCurrency(finalAmount);
+        }
+
+        /**
+         * Clear order
+         */
+        function clearOrder() {
+            if (confirm('Bạn chắc chắn muốn xóa toàn bộ đơn hàng?')) {
+                currentCart = [];
+                updateOrderDisplay();
+            }
+        }
+
+        /**
+         * Submit order
+         */
+        function submitOrder() {
+            if (currentCart.length === 0) {
+                alert('Vui lòng thêm sản phẩm vào đơn hàng!');
+                return;
+            }
+
+            alert('✓ Đơn hàng đã được tạo thành công!\n\nSố lượng sản phẩm: ' + currentCart.length + '\nTổng tiền: ' + formatCurrency(
+                currentCart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            ));
+            
+            currentCart = [];
+            updateOrderDisplay();
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('user-name').textContent = user.name || 'User';
+            loadProducts();
+        });
+    </script>
+</body>
+</html>

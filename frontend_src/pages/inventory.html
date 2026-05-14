@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi" data-required-role="admin">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Kho - Hệ Thống Quản Lý Quán Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .inventory-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .inv-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .inv-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .inv-card h3 {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .inv-card .value {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .status-low {
+            color: #f87171;
+            font-weight: bold;
+        }
+
+        .status-ok {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            
+            <span>COFFEE HDTQ</span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="/pages/dashboard.html">Trang Chủ</a></li>
+                <li><a href="/pages/tables.html">Bàn</a></li>
+                <li data-for-role="admin"><a href="/pages/products.html">Sản Phẩm</a></li>
+                <li data-for-role="admin"><a href="/pages/inventory.html" class="active">Kho Hàng</a></li>
+                <li data-for-role="admin"><a href="/pages/employees.html">Nhân Viên</a></li>
+                <li data-for-role="admin"><a href="/pages/reports.html">Báo Cáo</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <div class="navbar-user">
+                <span id="user-name">User</span>
+                <div class="user-avatar" id="user-avatar">U</div>
+            </div>
+            <button class="btn-logout" id="logout-btn">Đăng Xuất</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="/pages/dashboard.html">🏠 Trang Chủ</a></li>
+            <li><a href="/pages/tables.html">🛋️ Bàn</a></li>
+            <li data-for-role="admin"><a href="/pages/products.html">📦 Sản Phẩm</a></li>
+            <li data-for-role="admin"><a href="/pages/inventory.html" class="active">🏗️ Kho Hàng</a></li>
+            <li data-for-role="admin"><a href="/pages/employees.html">👥 Nhân Viên</a></li>
+            <li data-for-role="admin"><a href="/pages/reports.html">📈 Báo Cáo</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📦 Quản Lý Kho</h1>
+            <div class="page-actions">
+                <button class="btn-primary" onclick="showAddModal()">+ Nhập Kho</button>
+            </div>
+        </div>
+
+        <div class="inventory-stats">
+            <div class="inv-card">
+                <h3>Tổng Sản Phẩm</h3>
+                <div class="value" id="total-items">0</div>
+            </div>
+            <div class="inv-card">
+                <h3>Sắp Hết Hàng</h3>
+                <div class="value" id="low-stock-count" style="color: #EF4444;">0</div>
+            </div>
+            <div class="inv-card">
+                <h3>Tổng Giá Trị Kho</h3>
+                <div class="value" id="total-inventory-value">0đ</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-controls">
+                <input type="text" class="search-box" id="search-input" placeholder="Tìm kiếm nguyên liệu/sản phẩm..." oninput="filterInventory()">
+                <select id="category-filter" onchange="filterInventory()">
+                    <option value="all">Tất cả danh mục</option>
+                    <option value="nguyen_lieu">Nguyên liệu</option>
+                    <option value="do_uong">Đồ uống đóng chai</option>
+                    <option value="khac">Khác</option>
+                </select>
+            </div>
+
+            <table id="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên Mặt Hàng</th>
+                        <th>Đơn Vị</th>
+                        <th>Tồn Kho</th>
+                        <th>Tối Thiểu</th>
+                        <th>Trạng Thái</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-list">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal Nhập Kho -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <h2>Nhập Hàng Vào Kho</h2>
+            <form id="add-form" onsubmit="handleImport(event)">
+                <div class="form-group">
+                    <label>Sản phẩm/Nguyên liệu</label>
+                    <select id="item-select" required>
+                        <!-- Options loaded via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Số lượng nhập</label>
+                    <input type="number" id="import-qty" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Đơn giá nhập (đ)</label>
+                    <input type="number" id="import-price" min="0" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="hideAddModal()">Hủy</button>
+                    <button type="submit" class="btn-primary">Xác Nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        const MOCK_INVENTORY = [
+            { id: 'INV001', name: 'Hạt Cà Phê Robusta', unit: 'kg', qty: 45, min: 10, category: 'nguyen_lieu', price: 150000 },
+            { id: 'INV002', name: 'Sữa Đặc Vinamilk', unit: 'lon', qty: 12, min: 20, category: 'nguyen_lieu', price: 18000 },
+            { id: 'INV003', name: 'Đường Cát', unit: 'kg', qty: 25, min: 5, category: 'nguyen_lieu', price: 22000 },
+            { id: 'INV004', name: 'Nước Suối Aquafina', unit: 'chai', qty: 48, min: 24, category: 'do_uong', price: 5000 },
+            { id: 'INV005', name: 'Coca Cola', unit: 'lon', qty: 8, min: 12, category: 'do_uong', price: 7000 },
+            { id: 'INV006', name: 'Trà Lục Trà', unit: 'kg', qty: 5, min: 2, category: 'nguyen_lieu', price: 120000 }
+        ];
+
+        function renderInventory(data) {
+            const list = document.getElementById('inventory-list');
+            list.innerHTML = data.map(item => {
+                const isLow = item.qty < item.min;
+                return `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.unit}</td>
+                        <td>${item.qty}</td>
+                        <td>${item.min}</td>
+                        <td>
+                            <span class="${isLow ? 'status-low' : 'status-ok'}">
+                                ${isLow ? '⚠️ Sắp hết' : '✅ Bình thường'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-small btn-primary" onclick="showAdjustModal('${item.id}')">✏️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update stats
+            document.getElementById('total-items').textContent = data.length;
+            document.getElementById('low-stock-count').textContent = data.filter(i => i.qty < i.min).length;
+            const totalValue = data.reduce((acc, curr) => acc + (curr.qty * curr.price), 0);
+            document.getElementById('total-inventory-value').textContent = new Intl.NumberFormat('vi-VN').format(totalValue) + 'đ';
+        }
+
+        function filterInventory() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            
+            const filtered = MOCK_INVENTORY.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(search) || item.id.toLowerCase().includes(search);
+                const matchesCategory = category === 'all' || item.category === category;
+                return matchesSearch && matchesCategory;
+            });
+            
+            renderInventory(filtered);
+        }
+
+        function showAddModal() {
+            const select = document.getElementById('item-select');
+            select.innerHTML = MOCK_INVENTORY.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+            document.getElementById('add-modal').style.display = 'flex';
+        }
+
+        function hideAddModal() {
+            document.getElementById('add-modal').style.display = 'none';
+        }
+
+        function handleImport(e) {
+            e.preventDefault();
+            alert('✓ Đã ghi nhận phiếu nhập kho!');
+            hideAddModal();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderInventory(MOCK_INVENTORY);
+        });
+    </script>
+</body>
+</html>
