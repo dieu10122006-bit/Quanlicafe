@@ -762,27 +762,50 @@
                 this.showAlert('<span class="loading-spinner"></span>Đang xử lý...', 'loading');
 
                 try {
-                    const response = await API.auth.signup(formData);
-
-                    this.showAlert('Đăng ký thành công! Đang chuyển hướng...', 'success');
-                    
-                    // Save token and user info
-                    localStorage.setItem('token', response.token);
-                    localStorage.setItem('user', JSON.stringify(response.user));
-
-                    // Redirect to appropriate page
-                    setTimeout(() => {
-                        if (response.user.role === 'admin') {
-                            window.location.href = '/pages/dashboard.html';
-                        } else if (response.user.role === 'staff') {
-                            window.location.href = '/pages/order.html';
-                        } else {
-                            window.location.href = '/pages/menu.html';
+                    let result;
+                    if (window.API && window.API.auth && window.API.auth.signup) {
+                        result = await window.API.auth.signup(formData);
+                    } else {
+                        const response = await fetch('/api/auth/signup', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(formData)
+                        });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Đăng ký thất bại');
                         }
-                    }, 1500);
+                        result = await response.json();
+                    }
+
+                    if (result && result.success) {
+                        this.showAlert('Đăng ký thành công! Đang chuyển hướng...', 'success');
+                        
+                        // Save token and user info
+                        if (result.token && result.user) {
+                            localStorage.setItem('token', result.token);
+                            localStorage.setItem('user', JSON.stringify(result.user));
+                        }
+
+                        // Redirect to appropriate page
+                        setTimeout(() => {
+                            if (result.user && result.user.role === 'admin') {
+                                window.location.href = '/pages/dashboard.html';
+                            } else if (result.user && result.user.role === 'staff') {
+                                window.location.href = '/pages/order.html';
+                            } else {
+                                window.location.href = '/pages/login.html';
+                            }
+                        }, 1500);
+                    } else {
+                        throw new Error(result.message || 'Đăng ký thất bại');
+                    }
 
                 } catch (error) {
-                    this.showAlert(error.message, 'error');
+                    this.showAlert(error.message || 'Lỗi: Không thể đăng ký', 'error');
+                    console.error('Signup Exception:', error);
+                } finally {
                     this.signupBtn.disabled = false;
                 }
             },

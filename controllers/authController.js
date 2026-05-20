@@ -7,7 +7,7 @@ const pool = require('../config/database');
  * POST /api/auth/login
  * Body: { username, password }
  */
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
     try {
         const { username, password } = req.body;
 
@@ -38,13 +38,10 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         
         if (!isMatch) {
-            // Kiểm tra fallback plain text nếu bcrypt thất bại (để hỗ trợ dev/demo)
-            if (user.password !== password) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Tên đăng nhập hoặc mật khẩu không đúng'
-                });
-            }
+            return res.status(401).json({
+                success: false,
+                message: 'Tên đăng nhập hoặc mật khẩu không đúng'
+            });
         }
 
         // Tạo JWT token
@@ -73,10 +70,7 @@ exports.login = async (req, res) => {
 
     } catch (error) {
         console.error('Lỗi đăng nhập:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -85,7 +79,7 @@ exports.login = async (req, res) => {
  * GET /api/auth/current-user
  * Header: Authorization: Bearer token
  */
-exports.getCurrentUser = async (req, res) => {
+exports.getCurrentUser = async (req, res, next) => {
     try {
         const [users] = await pool.query(
             'SELECT user_id, username, full_name, role, email FROM users WHERE user_id = ?',
@@ -106,10 +100,7 @@ exports.getCurrentUser = async (req, res) => {
 
     } catch (error) {
         console.error('Lỗi lấy thông tin người dùng:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -117,7 +108,7 @@ exports.getCurrentUser = async (req, res) => {
  * ĐĂNG KÝ - Tạo tài khoản người dùng mới
  * POST /api/auth/signup
  */
-exports.signup = async (req, res) => {
+exports.signup = async (req, res, next) => {
     try {
         const { username, password, email, fullName, phone, role } = req.body;
 
@@ -170,32 +161,32 @@ exports.signup = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi đăng ký:', error);
-        res.status(500).json({ success: false, message: 'Lỗi máy chủ nội bộ' });
+        next(error);
     }
 };
 
 /**
  * Kiểm tra tên đăng nhập đã tồn tại chưa
  */
-exports.checkUsername = async (req, res) => {
+exports.checkUsername = async (req, res, next) => {
     try {
         const { username } = req.query;
         const [users] = await pool.query('SELECT user_id FROM users WHERE username = ?', [username]);
         res.json({ success: true, available: users.length === 0 });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
 /**
  * Kiểm tra email đã tồn tại chưa
  */
-exports.checkEmail = async (req, res) => {
+exports.checkEmail = async (req, res, next) => {
     try {
         const { email } = req.query;
         const [users] = await pool.query('SELECT user_id FROM users WHERE email = ?', [email]);
         res.json({ success: true, available: users.length === 0 });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };

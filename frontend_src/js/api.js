@@ -35,13 +35,19 @@ const API = {
                     window.location.href = '/pages/login.html';
                     return; // Prevent further execution
                 }
-                let error;
+                
+                let errorData;
                 try {
-                    error = await response.json();
+                    errorData = await response.json();
                 } catch(e) {
-                    throw new Error('API Error');
+                    throw new Error('Lỗi máy chủ: Không thể xử lý phản hồi (' + response.status + ')');
                 }
-                throw new Error(error.message || 'API Error');
+                
+                if (errorData.errors && Array.isArray(errorData.errors)) {
+                    throw new Error(errorData.errors.map(err => err.msg || err.message || JSON.stringify(err)).join(', '));
+                }
+                
+                throw new Error(errorData.message || 'Có lỗi xảy ra từ máy chủ');
             }
 
             return await response.json();
@@ -239,4 +245,7 @@ const API = {
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = API;
+}
+if (typeof window !== 'undefined') {
+    window.API = API;
 }

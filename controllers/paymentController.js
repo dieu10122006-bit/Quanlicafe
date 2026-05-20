@@ -1,23 +1,31 @@
 const pool = require('../config/database');
 
-exports.processPayment = async (req, res) => {
+exports.processPayment = async (req, res, next) => {
+    let connection;
     try {
         const { orderId } = req.params;
         const { amount, method, notes } = req.body;
         
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
         // Cập nhật trạng thái đơn hàng
-        await pool.query('UPDATE orders SET status = ?, payment_method = ? WHERE order_id = ?', ['completed', method, orderId]);
+        await connection.query('UPDATE orders SET status = ?, payment_method = ? WHERE order_id = ?', ['completed', method, orderId]);
         
         // Tạo hóa đơn
         const invoiceNumber = 'INV' + Date.now();
-        await pool.query(
+        await connection.query(
             'INSERT INTO invoices (order_id, invoice_number, total_amount, paid_amount, payment_method, notes) VALUES (?, ?, ?, ?, ?, ?)',
             [orderId, invoiceNumber, amount, amount, method, notes]
         );
         
+        await connection.commit();
         res.json({ success: true, message: 'Payment processed' });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        if (connection) await connection.rollback();
+        next(error);
+    } finally {
+        if (connection) connection.release();
     }
 };
 

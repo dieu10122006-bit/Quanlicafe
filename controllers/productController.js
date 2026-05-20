@@ -1,10 +1,11 @@
 const pool = require('../config/database');
+const { clearCachePrefix } = require('../middleware/cacheMiddleware');
 
 /**
  * LẤY DANH SÁCH TẤT CẢ DANH MỤC
  * GET /api/categories
  */
-exports.getAllCategories = async (req, res) => {
+exports.getAllCategories = async (req, res, next) => {
     try {
         const [categories] = await pool.query(
             'SELECT category_id, category_name, description, image_url, status FROM categories WHERE status = ? ORDER BY display_order',
@@ -17,10 +18,7 @@ exports.getAllCategories = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi lấy danh sách danh mục:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -28,26 +26,37 @@ exports.getAllCategories = async (req, res) => {
  * LẤY DANH SÁCH TẤT CẢ SẢN PHẨM
  * GET /api/products
  */
-exports.getAllProducts = async (req, res) => {
+exports.getAllProducts = async (req, res, next) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
         const [products] = await pool.query(
             `SELECT p.product_id, p.product_name, p.price, p.description, 
                     c.category_id, c.category_name, p.image_url, p.status
              FROM products p
              LEFT JOIN categories c ON p.category_id = c.category_id
-             ORDER BY p.product_id`
+             ORDER BY p.product_id
+             LIMIT ? OFFSET ?`,
+             [limit, offset]
         );
+        
+        const [totalRows] = await pool.query('SELECT COUNT(*) as count FROM products');
 
         res.json({
             success: true,
-            products
+            products,
+            pagination: {
+                page,
+                limit,
+                total: totalRows[0].count,
+                totalPages: Math.ceil(totalRows[0].count / limit)
+            }
         });
     } catch (error) {
         console.error('Lỗi lấy danh sách sản phẩm:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -55,7 +64,7 @@ exports.getAllProducts = async (req, res) => {
  * LẤY THÔNG TIN SẢN PHẨM THEO ID
  * GET /api/products/:id
  */
-exports.getProductById = async (req, res) => {
+exports.getProductById = async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -81,10 +90,7 @@ exports.getProductById = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi lấy thông tin sản phẩm:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -92,7 +98,7 @@ exports.getProductById = async (req, res) => {
  * LẤY SẢN PHẨM THEO DANH MỤC
  * GET /api/products/category/:categoryId
  */
-exports.getProductsByCategory = async (req, res) => {
+exports.getProductsByCategory = async (req, res, next) => {
     try {
         const { categoryId } = req.params;
 
@@ -112,10 +118,7 @@ exports.getProductsByCategory = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi lấy sản phẩm theo danh mục:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -124,7 +127,7 @@ exports.getProductsByCategory = async (req, res) => {
  * POST /api/products
  * Body: { product_name, category_id, price, description }
  */
-exports.createProduct = async (req, res) => {
+exports.createProduct = async (req, res, next) => {
     try {
         const { product_name, category_id, price, description } = req.body;
 
@@ -141,16 +144,15 @@ exports.createProduct = async (req, res) => {
             [product_name, category_id, price, description, 'active']
         );
 
+        clearCachePrefix('/api/products');
+
         res.status(201).json({
             success: true,
             message: 'Sản phẩm được tạo thành công'
         });
     } catch (error) {
         console.error('Lỗi tạo sản phẩm:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -159,7 +161,7 @@ exports.createProduct = async (req, res) => {
  * PUT /api/products/:id
  * Body: { product_name, category_id, price, description, status }
  */
-exports.updateProduct = async (req, res) => {
+exports.updateProduct = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { product_name, category_id, price, description, status } = req.body;
@@ -169,16 +171,15 @@ exports.updateProduct = async (req, res) => {
             [product_name, category_id, price, description, status, id]
         );
 
+        clearCachePrefix('/api/products');
+
         res.json({
             success: true,
             message: 'Sản phẩm được cập nhật thành công'
         });
     } catch (error) {
         console.error('Lỗi cập nhật sản phẩm:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -186,11 +187,13 @@ exports.updateProduct = async (req, res) => {
  * XÓA SẢN PHẨM (Admin)
  * DELETE /api/products/:id
  */
-exports.deleteProduct = async (req, res) => {
+exports.deleteProduct = async (req, res, next) => {
     try {
         const { id } = req.params;
 
         await pool.query('DELETE FROM products WHERE product_id = ?', [id]);
+
+        clearCachePrefix('/api/products');
 
         res.json({
             success: true,
@@ -198,9 +201,6 @@ exports.deleteProduct = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi xóa sản phẩm:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };

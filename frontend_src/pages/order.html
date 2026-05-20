@@ -483,18 +483,42 @@
         /**
          * Submit order
          */
-        function submitOrder() {
+        async function submitOrder() {
             if (currentCart.length === 0) {
                 alert('Vui lòng thêm sản phẩm vào đơn hàng!');
                 return;
             }
 
-            alert('✓ Đơn hàng đã được tạo thành công!\n\nSố lượng sản phẩm: ' + currentCart.length + '\nTổng tiền: ' + formatCurrency(
-                currentCart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-            ));
-            
-            currentCart = [];
-            updateOrderDisplay();
+            try {
+                const totalAmount = currentCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const items = currentCart.map(item => ({
+                    product_id: item.id,
+                    quantity: item.quantity,
+                    price: item.price
+                }));
+
+                const orderData = {
+                    user_id: JSON.parse(localStorage.getItem('user') || '{}').id || 1,
+                    table_id: 1, // Mặc định hoặc lấy từ giao diện
+                    customer_name: 'Khách vãng lai',
+                    items,
+                    total_amount: totalAmount,
+                    discount_percent: 0,
+                    final_amount: totalAmount
+                };
+
+                const res = await API.orders.create(orderData);
+                if (res.success) {
+                    alert('✓ Đơn hàng đã được tạo thành công!\nMã đơn: #' + res.orderId + '\nTổng tiền: ' + formatCurrency(totalAmount));
+                    currentCart = [];
+                    updateOrderDisplay();
+                } else {
+                    alert('Lỗi: ' + res.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Đã xảy ra lỗi khi tạo đơn hàng');
+            }
         }
 
         // Initialize

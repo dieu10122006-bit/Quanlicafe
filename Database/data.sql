@@ -10,10 +10,10 @@
 -- ========================================
 
 INSERT INTO users (username, email, password, full_name, phone, role, status) VALUES
-('admin', 'admin@cafe.local', '123456', 'Admin Cafe', '0123456789', 'admin', 'active'),
-('staff_001', 'staff1@cafe.local', '123456', 'Nhân viên 1', '0123456790', 'staff', 'active'),
-('staff_002', 'staff2@cafe.local', '123456', 'Nhân viên 2', '0123456791', 'staff', 'active'),
-('staff_003', 'staff3@cafe.local', '123456', 'Nhân viên 3', '0123456792', 'staff', 'active');
+('admin', 'admin@cafe.local', '$2b$10$K7xVrVKit4djrOpouzjG4O.oat/yVgjdsLZH6Gfgp7GtCfUh024UC', 'Admin Cafe', '0123456789', 'admin', 'active'),
+('staff_001', 'staff1@cafe.local', '$2b$10$K7xVrVKit4djrOpouzjG4O.oat/yVgjdsLZH6Gfgp7GtCfUh024UC', 'Nhân viên 1', '0123456790', 'staff', 'active'),
+('staff_002', 'staff2@cafe.local', '$2b$10$K7xVrVKit4djrOpouzjG4O.oat/yVgjdsLZH6Gfgp7GtCfUh024UC', 'Nhân viên 2', '0123456791', 'staff', 'active'),
+('staff_003', 'staff3@cafe.local', '$2b$10$K7xVrVKit4djrOpouzjG4O.oat/yVgjdsLZH6Gfgp7GtCfUh024UC', 'Nhân viên 3', '0123456792', 'staff', 'active');
 
 -- Password mặc định: '123456' (đã hash)
 

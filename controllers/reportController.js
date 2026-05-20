@@ -4,7 +4,7 @@ const pool = require('../config/database');
  * LẤY BÁO CÁO DOANH THU
  * GET /api/reports/revenue?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD
  */
-exports.getRevenue = async (req, res) => {
+exports.getRevenue = async (req, res, next) => {
     try {
         const { fromDate, toDate } = req.query;
 
@@ -29,10 +29,7 @@ exports.getRevenue = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi lấy báo cáo doanh thu:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -40,7 +37,7 @@ exports.getRevenue = async (req, res) => {
  * LẤY BÁO CÁO SẢN PHẨM (Top 10 sản phẩm bán chạy)
  * GET /api/reports/products?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD
  */
-exports.getProductReport = async (req, res) => {
+exports.getProductReport = async (req, res, next) => {
     try {
         const { fromDate, toDate } = req.query;
 
@@ -71,10 +68,7 @@ exports.getProductReport = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi lấy báo cáo sản phẩm:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -82,7 +76,7 @@ exports.getProductReport = async (req, res) => {
  * LẤY BÁO CÁO NHÂN VIÊN
  * GET /api/reports/employees
  */
-exports.getEmployeeReport = async (req, res) => {
+exports.getEmployeeReport = async (req, res, next) => {
     try {
         const [employees] = await pool.query(
             'SELECT employee_id, full_name, position, email, phone, hire_date, status FROM employees ORDER BY employee_id'
@@ -94,10 +88,7 @@ exports.getEmployeeReport = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi lấy báo cáo nhân viên:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
@@ -105,7 +96,7 @@ exports.getEmployeeReport = async (req, res) => {
  * LẤY BÁO CÁO DOANH THU HÀNG NGÀY
  * GET /api/reports/daily-revenue?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD
  */
-exports.getDailyRevenue = async (req, res) => {
+exports.getDailyRevenue = async (req, res, next) => {
     try {
         const { fromDate, toDate } = req.query;
 
@@ -136,21 +127,18 @@ exports.getDailyRevenue = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi lấy báo cáo doanh thu hàng ngày:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi máy chủ nội bộ'
-        });
+        next(error);
     }
 };
 
 /**
  * LẤY BÁO CÁO KHÁCH HÀNG
  */
-exports.getCustomers = async (req, res) => {
+exports.getCustomers = async (req, res, next) => {
     try {
         const [customers] = await pool.query('SELECT user_id, username, full_name, email, phone FROM users WHERE role = "customer"');
         res.json({ success: true, customers });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
