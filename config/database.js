@@ -37,7 +37,6 @@ if (process.env.DB_CONNECTION === 'mysql') {
         sql = sql.replace(/ENUM\([^)]*\)/gi, 'TEXT');
         sql = sql.replace(/DECIMAL\([^)]*\)/gi, 'REAL');
         sql = sql.replace(/DATETIME/gi, 'TEXT');
-        sql = sql.replace(/USE [^;]*;/gi, '');
         sql = sql.replace(/CREATE DATABASE [^;]*;/gi, '');
         sql = sql.replace(/ENGINE=[^;]*/gi, '');
         sql = sql.replace(/CHARACTER SET [^;]*/gi, '');
@@ -48,11 +47,20 @@ if (process.env.DB_CONNECTION === 'mysql') {
         try {
             db.exec(sql);
         } catch (err) {
+            console.error('Full exec err:', err.message);
             const statements = sql.split(/;(?=(?:[^'"]*['"][^'"]*['"])*[^'"]*$)/);
             for (let statement of statements) {
                 statement = statement.trim();
-                if (statement && !statement.startsWith('--') && !statement.startsWith('/*')) {
-                    try { db.prepare(statement).run(); } catch (e) {}
+                // remove leading/inline comments
+                statement = statement.replace(/^--.*$/gm, '').trim();
+                statement = statement.replace(/^\/\*[\s\S]*?\*\//gm, '').trim();
+                
+                if (statement) {
+                    try { 
+                        db.prepare(statement).run(); 
+                    } catch (e) { 
+                        console.error('Statement err:', e.message, 'Stmt:', statement.substring(0, 50));
+                    }
                 }
             }
         }
@@ -64,7 +72,9 @@ if (process.env.DB_CONNECTION === 'mysql') {
             runSqlFile(path.join(process.cwd(), 'Database', 'schema.sql'));
             runSqlFile(path.join(process.cwd(), 'Database', 'data.sql'));
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error("DB Init Error:", e);
+    }
 
     pool = {
         query: async (sql, params = []) => {

@@ -3,8 +3,6 @@
 -- cafe_management_system
 -- ========================================
 
--- USE cafe_management_system; -- SQLite doesn't use USE
-
 -- ========================================
 -- 1. THÊM NGƯỜI DÙNG
 -- ========================================

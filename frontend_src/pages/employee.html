@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>POS - Quản Lý Cafe</title>
+    <!-- Use Google Fonts for modern text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/employee.css">
+</head>
+<body>
+    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    
+    <div class="app-container">
+        <!-- Compact Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="logo">☕</div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-view="tables" title="Quản lý bàn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                </button>
+                <button class="nav-btn" data-view="menu" title="Menu Bán Hàng">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+                </button>
+                <button class="nav-btn" id="notif-btn" title="Thông báo">
+                    <div class="badge" id="notif-badge" style="display: none;">0</div>
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </button>
+            </nav>
+            <div class="sidebar-bottom">
+                <div class="user-avatar" title="Nhân viên đang trực" id="current-user-avatar">NV</div>
+                <button class="nav-btn btn-logout" id="logout-btn" title="Đăng xuất">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1 id="view-title">Sơ Đồ Bàn</h1>
+                <div class="header-right">
+                    <div class="clock" id="real-time-clock">00:00:00</div>
+                </div>
+            </header>
+
+            <!-- Tables View -->
+            <div class="view-section active" id="view-tables">
+                <div class="filters glass-panel">
+                    <button class="filter-btn active" data-status="all">Tất cả</button>
+                    <button class="filter-btn" data-status="empty">Trống</button>
+                    <button class="filter-btn" data-status="occupied">Có khách</button>
+                    <button class="filter-btn" data-status="paying">Đang thanh toán</button>
+                    <button class="filter-btn" data-status="reserved">Đặt trước</button>
+                </div>
+                <div class="tables-grid" id="tables-grid">
+                    <!-- Bàn sẽ được render qua JS -->
+                </div>
+            </div>
+
+            <!-- POS / Order View (Split screen) -->
+            <div class="view-section" id="view-pos">
+                <div class="pos-layout">
+                    <!-- Left: Menu -->
+                    <div class="pos-menu">
+                        <div class="menu-header glass-panel">
+                            <button id="btn-back-tables" class="btn-icon">
+                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                            </button>
+                            <input type="text" id="search-product" placeholder="Tìm kiếm món ăn..." class="search-input">
+                        </div>
+                        <div class="category-tabs" id="category-tabs">
+                            <!-- Danh mục render qua JS -->
+                        </div>
+                        <div class="menu-grid" id="menu-grid">
+                            <!-- Menu render qua JS -->
+                        </div>
+                    </div>
+
+                    <!-- Right: Cart & Order Details -->
+                    <div class="pos-cart glass-panel">
+                        <div class="cart-header">
+                            <h2 id="cart-table-name">Bàn --</h2>
+                            <span class="status-badge" id="cart-table-status">Trống</span>
+                        </div>
+                        
+                        <div class="cart-items-container">
+                            <table class="cart-table">
+                                <thead>
+                                    <tr>
+                                        <th>Món</th>
+                                        <th style="width: 100px; text-align: center;">SL</th>
+                                        <th style="width: 110px; text-align: right;">Tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-items">
+                                    <!-- Items render qua JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="cart-summary">
+                            <div class="summary-row">
+                                <span>Tạm tính</span>
+                                <span id="summary-subtotal">0đ</span>
+                            </div>
+                            <div class="summary-row total-row">
+                                <span>Tổng cộng</span>
+                                <span id="summary-total">0đ</span>
+                            </div>
+                        </div>
+
+                        <div class="cart-actions">
+                            <div class="action-row">
+                                <button class="btn btn-outline" id="btn-print">🖨️ In H.Đơn</button>
+                                <button class="btn btn-outline" id="btn-kitchen">👨‍🍳 Gửi Bếp</button>
+                            </div>
+                            <button class="btn btn-primary btn-large" id="btn-checkout">Thanh Toán</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkout-modal">
+        <div class="modal-content glass-panel checkout-box">
+            <div class="modal-header">
+                <h2>Thanh Toán - <span id="checkout-table-name">Bàn</span></h2>
+                <button class="close-modal" id="close-checkout">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="checkout-layout">
+                    <div class="checkout-details">
+                        <div class="amount-row"><span>Tổng tiền món:</span> <strong id="checkout-subtotal">0đ</strong></div>
+                        <div class="amount-row">
+                            <span>Giảm giá (%):</span> 
+                            <input type="number" id="checkout-discount" value="0" min="0" max="100" class="small-input">
+                        </div>
+                        <div class="amount-row"><span>VAT (8%):</span> <strong id="checkout-vat">0đ</strong></div>
+                        <div class="amount-row total"><span>Khách phải trả:</span> <strong id="checkout-final" class="highlight-text">0đ</strong></div>
+                        
+                        <div class="payment-methods">
+                            <label class="method-btn active"><input type="radio" name="pay_method" value="cash" checked> 💵 Tiền mặt</label>
+                            <label class="method-btn"><input type="radio" name="pay_method" value="transfer"> 🏦 Chuyển khoản</label>
+                            <label class="method-btn"><input type="radio" name="pay_method" value="qr"> 📱 Mã QR</label>
+                        </div>
+
+                        <div id="cash-payment-section">
+                            <div class="amount-row">
+                                <span>Khách đưa:</span> 
+                                <input type="number" id="checkout-received" placeholder="Nhập số tiền..." class="full-input">
+                            </div>
+                            <div class="amount-row" style="margin-bottom: 0;">
+                                <span>Tiền thừa:</span> 
+                                <strong id="checkout-change" class="change-text">0đ</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary full-width" id="btn-confirm-payment">Xác Nhận & Hoàn Tất</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/employee.js"></script>
+</body>
+</html>
